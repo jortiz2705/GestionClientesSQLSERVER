@@ -8,7 +8,7 @@ namespace GestionClientesSQLSERVER.Repositories
     public interface IClienteRepository
     {
         List<Cliente> ListarClientes();
-        bool RegistrarCliente(Cliente cliente);
+        int RegistrarCliente(Cliente cliente);
         bool ActualizarCliente(Cliente cliente);
         bool EliminarCliente(int idCliente);
         Cliente? ObtenerClientePorId(int idCliente);

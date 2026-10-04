@@ -8,7 +8,7 @@ using System.Text;
 
 namespace GestionClientesSQLSERVER.Repositories
 {
-    internal class ClienteRepositorySp : IClienteRepository
+    public class ClienteRepositorySp : IClienteRepository
     {
         private readonly Conexion _conexion;
         public ClienteRepositorySp()
@@ -47,7 +47,7 @@ namespace GestionClientesSQLSERVER.Repositories
             }
             return clientes;
         }
-        public bool RegistrarCliente(Cliente cliente)
+        public int RegistrarCliente(Cliente cliente)
         {
             string sql = "sp_RegistrarCliente"; // Llamada al procedimiento almacenado
             try
@@ -60,14 +60,24 @@ namespace GestionClientesSQLSERVER.Repositories
                         cmd.CommandType = System.Data.CommandType.StoredProcedure; // Indica que es un procedimiento almacenado
                         cmd.Parameters.Add("@nombre", SqlDbType.VarChar, 100).Value = cliente.Nombre;
                         cmd.Parameters.Add("@ciudad", SqlDbType.VarChar, 50).Value = cliente.Ciudad;
-                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = cliente.Email;
+                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = (object?)cliente.Email ?? DBNull.Value;
                         var paramCredito = cmd.Parameters.Add("@credito", SqlDbType.Decimal);
                         paramCredito.Precision = 18;
                         paramCredito.Scale = 2;
                         paramCredito.Value = cliente.Credito;
                         cmd.Parameters.Add("@estado", SqlDbType.Char, 1).Value = cliente.Estado;
-                        int filasAfectadas = cmd.ExecuteNonQuery();
-                        return filasAfectadas > 0; // Retorna true si se insertó al menos una fila
+                        // 2. AGREGAR EL PARÁMETRO DE SALIDA EN C#
+                        SqlParameter paramId = new SqlParameter("@id_cliente", SqlDbType.Int);
+                        paramId.Direction = ParameterDirection.Output;
+                        cmd.Parameters.Add(paramId);
+
+                        int filasAfectadas = cmd.ExecuteNonQuery(); // Ejecutamos el procedimiento
+
+                        if (filasAfectadas > 0 && paramId.Value != DBNull.Value)
+                        {
+                            return Convert.ToInt32(paramId.Value); // Retorna el ID del cliente insertado
+                        }
+                        return 0; // Retorna 0 si no se insertó ningún cliente
                     }
                 }
             }
@@ -91,29 +101,56 @@ namespace GestionClientesSQLSERVER.Repositories
                     using (SqlCommand cmd = new SqlCommand(sql, cn))
                     {
                         cmd.CommandType = System.Data.CommandType.StoredProcedure; // Indica que es un procedimiento almacenado
-                        cmd.Parameters.AddWithValue("@id_cliente", cliente.IdCliente);
-                        cmd.Parameters.AddWithValue("@nombre", cliente.Nombre);
-                        cmd.Parameters.AddWithValue("@ciudad", cliente.Ciudad);
-                        cmd.Parameters.AddWithValue("@email", (object?)cliente.Email ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@credito", cliente.Credito);
-                        cmd.Parameters.AddWithValue("@estado", cliente.Estado);
-                        cmd.ExecuteNonQuery();
+
+                        cmd.Parameters.Add("@id_cliente", SqlDbType.Int).Value = cliente.IdCliente;
+                        cmd.Parameters.Add("@nombre", SqlDbType.VarChar, 100).Value = cliente.Nombre;
+                        cmd.Parameters.Add("@ciudad", SqlDbType.VarChar, 50).Value = cliente.Ciudad;
+                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = (object?)cliente.Email ?? DBNull.Value;
+                        var paramCredito = cmd.Parameters.Add("@credito", SqlDbType.Decimal);
+                        paramCredito.Precision = 18;
+                        paramCredito.Scale = 2;
+                        paramCredito.Value = cliente.Credito;
+                        cmd.Parameters.Add("@estado", SqlDbType.Char, 1).Value = cliente.Estado;
+                        int filasAfectadas = cmd.ExecuteNonQuery(); // Ejecutamos el procedimiento
+
+                        return filasAfectadas > 0; // Retorna true si se actualizó algún cliente
                     }
                 }
             }
             catch (SqlException ex)
             {
-                throw new Exception("Error de Base de Datos", ex);
+                throw new Exception("Error al actualizar el cliente", ex);
             }
             catch (Exception ex)
             {
                 throw new Exception("Error inesperado", ex);
             }
-            return true;
         }
         public bool EliminarCliente(int idCliente)
         {
-            return true;
+            string sql = "sp_EliminarCliente"; // Llamada al procedimiento almacenado
+            try
+            {
+                using (SqlConnection cn = _conexion.ObtenerConexion())
+                {
+                    cn.Open();
+                    using (SqlCommand cmd = new SqlCommand(sql, cn))
+                    {
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure; // Indica que es un procedimiento almacenado
+                        cmd.Parameters.Add("@id_cliente", SqlDbType.Int).Value = idCliente;
+                        int filasAfectadas = cmd.ExecuteNonQuery(); // Ejecutamos el procedimiento
+                        return filasAfectadas > 0; // Retorna true si se eliminó algún cliente
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception("Error al eliminar el cliente", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error inesperado", ex);
+            }
         }
         public Cliente? ObtenerClientePorId(int idCliente)
         {
@@ -126,7 +163,7 @@ namespace GestionClientesSQLSERVER.Repositories
                     using (SqlCommand cmd = new SqlCommand(sql, cn))
                     {
                         cmd.CommandType = System.Data.CommandType.StoredProcedure; // Indica que es un procedimiento almacenado
-                        cmd.Parameters.AddWithValue("@id_cliente", idCliente);
+                        cmd.Parameters.Add("@id_cliente", SqlDbType.Int).Value = idCliente;
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
@@ -139,7 +176,7 @@ namespace GestionClientesSQLSERVER.Repositories
             }
             catch (SqlException ex)
             {
-                throw new Exception("Error de Base de Datos", ex);
+                throw new Exception("Error al obtener el cliente", ex);
             }
             catch (Exception ex)
             {

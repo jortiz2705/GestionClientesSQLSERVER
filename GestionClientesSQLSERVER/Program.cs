@@ -3,6 +3,7 @@ using GestionClientesSQLSERVER.Models;
 using GestionClientesSQLSERVER.Repositories;
 using GestionClientesSQLSERVER.Services;
 using Microsoft.Extensions.DependencyInjection;
+using GestionClientesSQLSERVER.Helpers;
 
 var services = new ServiceCollection();
 
@@ -44,7 +45,7 @@ do
             break;
         case 2:
             Console.Write("Ingrese el ID del cliente a buscar: ");
-            int idCliente = int.Parse(Console.ReadLine()!);
+            int idCliente = ConsoleHelper.LeerNumero("ID del cliente: ");
             var cliente = service.ObtenerClientePorId(idCliente);
             if (cliente != null)
             {
@@ -62,28 +63,63 @@ do
             break;
         case 3:
             Console.WriteLine("Ingrese los datos del nuevo cliente:");
-            Console.Write("Nombre: ");
-            string nombre = Console.ReadLine()!;
-            Console.Write("Ciudad: ");
-            string ciudad = Console.ReadLine()!;
-            Console.Write("Email: ");
-            string email = Console.ReadLine()!;
-            Console.Write("Crédito: ");
-            decimal credito = decimal.Parse(Console.ReadLine()!);
-            Console.Write("Estado (A/I): ");
-            string estado = Console.ReadLine()!;
+            string nombre = ConsoleHelper.LeerTexto("Nombre: ");
+            string ciudad = ConsoleHelper.LeerTexto("Ciudad: ");
+            string email = ConsoleHelper.LeerTexto("Email: ");
+            decimal credito = ConsoleHelper.LeerDecimal("Crédito: ");
+            string estado = ConsoleHelper.LeerEstado("Estado (A/I): ");
             var nuevoCliente = new Cliente(0, nombre, ciudad, email, credito, estado);
-            bool exitoRegistro = service.RegistrarCliente(nuevoCliente);
-            if (exitoRegistro)
+            int idRegistro = service.RegistrarCliente(nuevoCliente);
+            if (idRegistro > 0)
             {
-                Console.WriteLine("Cliente registrado correctamente.");
+                Console.WriteLine($"Cliente registrado correctamente. ID: {idRegistro}");
             }
             else
             {
                 Console.WriteLine("Error al registrar el cliente.");
             }
             break;
-
+        case 4:
+            Console.Write("Ingrese el ID del cliente a buscar: ");
+            int idClienteBuscar = ConsoleHelper.LeerNumero("ID del cliente: ");
+            var clienteEncontrado = service.ObtenerClientePorId(idClienteBuscar);
+            if (clienteEncontrado != null)
+            {
+                Console.WriteLine("Ingrese los datos del nuevo cliente:");
+                string nombreAtualizado = ConsoleHelper.LeerTexto("Nombre: ");
+                string ciudadActualizado = ConsoleHelper.LeerTexto("Ciudad: ");
+                string emailActualizado = ConsoleHelper.LeerTexto("Email: ");
+                decimal creditoActualizado = ConsoleHelper.LeerDecimal("Crédito: ");
+                string estadoActualizado = ConsoleHelper.LeerEstado("Estado (A/I): ");
+                var clienteActualizado = new Cliente(idClienteBuscar, nombreAtualizado, ciudadActualizado, emailActualizado, creditoActualizado, estadoActualizado);
+                bool exito = service.ActualizarCliente(clienteActualizado);
+                if (exito)
+                {
+                    Console.WriteLine("Cliente actualizado correctamente.");
+                }
+                else
+                {
+                    Console.WriteLine("Error al actualizar el cliente.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Cliente no encontrado.");
+            }
+            break;
+        case 5:
+            Console.Write("Ingrese el ID del cliente a eliminar: ");
+            int idClienteEliminar = int.Parse(Console.ReadLine()!);
+            bool exitoEliminar = service.EliminarCliente(idClienteEliminar);
+            if (exitoEliminar)
+            {
+                Console.WriteLine("Cliente eliminado correctamente.");
+            }
+            else
+            {
+                Console.WriteLine("Error al eliminar el cliente.");
+            }
+            break;
         case 6:
             Console.WriteLine("Saliendo del programa...");
             break;

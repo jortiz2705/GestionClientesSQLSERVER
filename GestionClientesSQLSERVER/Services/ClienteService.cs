@@ -13,15 +13,11 @@ namespace GestionClientesSQLSERVER.Services
         {
             _clienteRepository = clienteRepository;
         }
-        public string ProbarDependencia()
-        {
-            return _clienteRepository.GetType().Name;
-        }
         public List<Cliente> ListarClientes()
         {
             return _clienteRepository.ListarClientes(); 
         }
-        public  bool RegistrarCliente(Cliente cliente)
+        public  int RegistrarCliente(Cliente cliente)
         {
             if (string.IsNullOrWhiteSpace(cliente.Nombre))
             {
@@ -37,7 +33,6 @@ namespace GestionClientesSQLSERVER.Services
             }
             return _clienteRepository.RegistrarCliente(cliente);
         }
-
         public bool ActualizarCliente(Cliente cliente)
         {
             if (string.IsNullOrWhiteSpace(cliente.Nombre))
@@ -50,7 +45,6 @@ namespace GestionClientesSQLSERVER.Services
             }
             return _clienteRepository.ActualizarCliente(cliente);
         }
-
         public bool EliminarCliente(int idCliente)
         {
             if(idCliente <= 0)
@@ -60,7 +54,6 @@ namespace GestionClientesSQLSERVER.Services
 
             return _clienteRepository.EliminarCliente(idCliente);
         }
-
         public Cliente? ObtenerClientePorId(int idCliente)
         {
             if(idCliente <= 0)
@@ -68,8 +61,6 @@ namespace GestionClientesSQLSERVER.Services
                 throw new ArgumentException("El ID del cliente debe ser un valor positivo.");
             }
             return _clienteRepository.ObtenerClientePorId(idCliente);
-        }
-
-        
+        } 
     }
 }

@@ -48,12 +48,11 @@ namespace GestionClientesSQLSERVER.Repositories
             }
             return clientes;
         }
-
-        public bool RegistrarCliente(Cliente cliente)
+        public int RegistrarCliente(Cliente cliente)
         {
             string sql = @"
                 INSERT INTO Clientes (nombre, ciudad, email, credito, estado) 
-                VALUES (@nombre, @ciudad, @email, @credito, @estado)";
+                VALUES (@nombre, @ciudad, @email, @credito, @estado); select SCOPE_IDENTITY();";
 
             try
             {
@@ -64,14 +63,21 @@ namespace GestionClientesSQLSERVER.Repositories
                     {
                         cmd.Parameters.Add("@nombre", SqlDbType.VarChar, 100).Value = cliente.Nombre;
                         cmd.Parameters.Add("@ciudad", SqlDbType.VarChar, 50).Value = cliente.Ciudad;
-                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = cliente.Email;
+                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = (object?)cliente.Email ?? DBNull.Value;
                         var paramCredito = cmd.Parameters.Add("@credito", SqlDbType.Decimal);
                         paramCredito.Precision = 18;
                         paramCredito.Scale = 2;
                         paramCredito.Value = cliente.Credito;
                         cmd.Parameters.Add("@estado", SqlDbType.Char, 1).Value = cliente.Estado;
-                        int filasAfectadas = cmd.ExecuteNonQuery();
-                        return filasAfectadas > 0;
+                       
+                        object resultado = cmd.ExecuteScalar();
+
+                        if (resultado != null && resultado != DBNull.Value)
+                        {
+                            return Convert.ToInt32(resultado);
+                        }
+
+                        return 0;
                     }
                 }
             }
@@ -100,7 +106,7 @@ namespace GestionClientesSQLSERVER.Repositories
                         cmd.Parameters.Add("@id_cliente", SqlDbType.Int).Value = cliente.IdCliente;
                         cmd.Parameters.Add("@nombre", SqlDbType.VarChar, 100).Value = cliente.Nombre;
                         cmd.Parameters.Add("@ciudad", SqlDbType.VarChar, 50).Value = cliente.Ciudad;
-                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = cliente.Email;
+                        cmd.Parameters.Add("@email", SqlDbType.VarChar, 100).Value = (object?)cliente.Email ?? DBNull.Value;
                         var paramCredito = cmd.Parameters.Add("@credito", SqlDbType.Decimal);
                         paramCredito.Precision = 18;
                         paramCredito.Scale = 2;

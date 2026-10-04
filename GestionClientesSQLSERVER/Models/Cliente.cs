@@ -14,6 +14,23 @@ namespace GestionClientesSQLSERVER.Models
         public string Estado { get; private set; }
         public Cliente(int idCliente, string nombre, string ciudad, string? email, decimal credito, string estado)
         {
+            
+            if (estado != "A" && estado != "I" && string.IsNullOrWhiteSpace(estado))
+            {
+                throw new ArgumentException("El estado debe ser 'A' (Activo) o 'I' (Inactivo).");
+            }
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                throw new ArgumentException("El nombre no puede estar vacío.");
+            }
+            if (string.IsNullOrWhiteSpace(ciudad))
+            {
+                throw new ArgumentException("La ciudad no puede estar vacía.");
+            }
+            if (credito < 0)
+            {
+                throw new ArgumentException("El crédito no puede ser negativo.");
+            }
             IdCliente = idCliente;
             Nombre = nombre;
             Ciudad = ciudad;

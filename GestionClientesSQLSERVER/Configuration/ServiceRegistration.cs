@@ -9,7 +9,7 @@ namespace GestionClientesSQLSERVER.Configuration
         public static IServiceCollection RegistrarDependencias(
         this IServiceCollection services)
         {
-            services.AddScoped<IClienteRepository, ClienteRepositorySql>();
+            services.AddScoped<IClienteRepository, ClienteRepositorySp>();
 
             services.AddScoped<IClienteService, ClienteService>();
 
