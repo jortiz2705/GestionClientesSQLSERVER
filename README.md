@@ -1,212 +1,175 @@
-#Gestión de Clientes — C# + SQL Server + ADO.NET
+# Gestión de Clientes — C# + SQL Server + ADO.NET
 
-Aplicación de consola desarrollada en C# para la gestión de clientes, utilizando SQL Server como base de datos y ADO.NET 
-como tecnología de acceso a datos.
-Este proyecto forma parte de mi ruta de aprendizaje para especializarme en .NET / C#, 
-pasando de aplicaciones de consola hacia el desarrollo de ASP.NET Core Web API.
+**Aplicación de consola** desarrollada en C# para la gestión de clientes, utilizando **SQL Server** como base de datos y **ADO.NET** como tecnología de acceso a datos.
 
-Objetivo
+Este proyecto forma parte de mi ruta de aprendizaje para especializarme en **.NET / C#**, pasando de aplicaciones de consola hacia el desarrollo de **ASP.NET Core Web API**.
 
-Desarrollar una aplicación que permita gestionar clientes mediante operaciones CRUD:
+---
 
-Registrar clientes
-Listar clientes
-Buscar clientes por ID
-Actualizar clientes
-Eliminar clientes
+## **Objetivo**
 
-Además, el proyecto busca aplicar conceptos fundamentales de desarrollo profesional en .NET:
+Desarrollar una aplicación que permita gestionar clientes mediante operaciones **CRUD**:
+* Registrar clientes
+* Listar clientes
+* Buscar clientes por ID
+* Actualizar clientes
+* Eliminar clientes
 
-Programación Orientada a Objetos
-Interfaces
-Inyección de Dependencias
-Patrón Repository
-Separación de responsabilidades
-ADO.NET
-SQL Server
-Stored Procedures
-Manejo de excepciones
-Validaciones
+Además, el proyecto busca aplicar conceptos fundamentales de **desarrollo profesional en .NET**:
+* Programación Orientada a Objetos
+* Interfaces e Inyección de Dependencias
+* Patrón Repository y Separación de responsabilidades
+* ADO.NET, SQL Server y Stored Procedures
+* Manejo de excepciones y Validaciones
 
-Tecnologías utilizadas
-C#
-.NET
-SQL Server
-ADO.NET
-Microsoft.Data.SqlClient
-Microsoft.Extensions.DependencyInjection
-Visual Studio
-Git
-GitHub
+---
 
-Arquitectura
+## **Tecnologías utilizadas**
 
-El proyecto utiliza una estructura separada por responsabilidades:
+* **Lenguaje:** C# / .NET
+* **Base de Datos:** SQL Server
+* **Acceso a Datos:** ADO.NET / `Microsoft.Data.SqlClient`
+* **Herramientas:** Microsoft.Extensions.DependencyInjection, Visual Studio, Git, GitHub
 
+---
+
+## **Arquitectura del Proyecto**
+
+El proyecto utiliza una estructura limpia separada por capas y responsabilidades:
+
+```text
 GestionClientesSQLSERVER
 │
-├── Configuration
+├── 📁 Configuration
 │   └── ServiceRegistration.cs
 │
-├── Data
+├── 📁 Data
 │   └── Conexion.cs
 │
-├── Helpers
+├── 📁 Helpers
 │   └── ConsoleHelper.cs
 │
-├── Models
+├── 📁 Models
 │   └── Cliente.cs
 │
-├── Repositories
+├── 📁 Repositories
 │   ├── IClienteRepository.cs
 │   ├── ClienteRepositorySql.cs
 │   └── ClienteRepositorySp.cs
 │
-├── Services
+├── 📁 Services
 │   ├── IClienteService.cs
 │   └── ClienteService.cs
 │
-└── Program.cs
+└── 📄 Program.cs
+```
 
-Responsabilidades principales
+---
 
-Models
+## **Responsabilidades principales**
 
+### **Models**
 Contiene las entidades utilizadas por la aplicación.
 
-Data
+### **Data**
+Administra la conexión directa con SQL Server.
 
-Administra la conexión con SQL Server.
+### **Repositories**
+Contiene la lógica de acceso a datos. Se implementaron dos alternativas bajo una misma interfaz, lo que permite cambiar la estrategia de acceso a datos sin modificar la capa de servicios ni el programa principal:
+```text
+      IClienteRepository
+              │
+              ├──► ClienteRepositorySql (SQL directo)
+              └──► ClienteRepositorySp  (Stored Procedures)
+```
 
-Repositories
+### **Services**
+Contiene las reglas de negocio y validaciones antes de mandar la información al repositorio.
 
-Contiene la lógica de acceso a datos.
+### **Helpers**
+Contiene métodos reutilizables para la lectura y validación segura de datos ingresados desde la consola.
 
-Se implementaron dos alternativas:
-IClienteRepository
-       │
-       ├── ClienteRepositorySql
-       │       └── SQL directo
-       │
-       └── ClienteRepositorySp
-               └── Stored Procedures
+### **Configuration**
+Centraliza el registro de dependencias mediante **Dependency Injection**.
 
-Esto permite cambiar la estrategia de acceso a datos sin modificar el Service ni el programa principal.
+---
 
-Services
+## **Inyección de Dependencias**
 
-Contiene las reglas de negocio y validaciones antes de acceder al repositorio.
+El proyecto utiliza `Microsoft.Extensions.DependencyInjection`. La aplicación trabaja estrictamente contra interfaces, permitiendo un acoplamiento débil:
 
-Helpers
+```text
+IClienteService ──► ClienteService ──► IClienteRepository ──► ClienteRepositorySp / Sql
+```
 
-Contiene métodos reutilizables para la lectura y validación de datos ingresados desde consola.
+La implementación del repositorio se puede intercambiar desde la configuración cambiando solo una línea de código:
 
-Configuration
-
-Centraliza el registro de dependencias mediante Dependency Injection.
-Inyección de Dependencias
-
-El proyecto utiliza Microsoft.Extensions.DependencyInjection.
-
-La aplicación trabaja contra interfaces:
-
-IClienteService
-       ↓
-ClienteService
-       ↓
-IClienteRepository
-       ↓
-ClienteRepositorySp
-
-La implementación del repositorio puede cambiar desde la configuración:
-
+```csharp
+// Opción A: Usando Procedimientos Almacenados
 services.AddScoped<IClienteRepository, ClienteRepositorySp>();
 
-o:
+// Opción B: Usando SQL directo
+// services.AddScoped<IClienteRepository, ClienteRepositorySql>();
+```
+El resto de la aplicación permanece sin cambios, cumpliendo con el **Principio de Inversión de Dependencias**.
 
-services.AddScoped<IClienteRepository, ClienteRepositorySql>();
+---
 
-El resto de la aplicación permanece sin cambios.
+## **Base de datos**
 
-Esto permite comprender en la práctica el principio de inversión de dependencias y la ventaja de trabajar con abstracciones.
+* **Base de datos:** `GestionClientes`
+* **Tabla principal:** `Clientes`
 
-Base de datos
+### **Estructura de la Tabla**
 
-Base de datos:
+| Campo | Tipo | Descripción |
+| :--- | :--- | :--- |
+| **id_cliente** | `INT` | Identificador único (IDENTITY) |
+| **nombre** | `VARCHAR(100)` | Nombre completo del cliente |
+| **ciudad** | `VARCHAR(50)` | Ciudad de residencia |
+| **fecha_registro** | `DATETIME` | Fecha de registro automático (DEFAULT) |
+| **Email** | `VARCHAR(100)` | Correo electrónico |
+| **Credito** | `DECIMAL(18,2)`| Crédito financiero asignado |
+| **Estado** | `CHAR(1)` | Estado: **A** = Activo / **I** = Inactivo (Restricción CHECK) |
 
-GestionClientes
+---
 
-Tabla principal:
+## **Acceso a datos**
 
-Clientes
+El proyecto implementa dos formas independientes para interactuar con SQL Server:
 
-Campos principales:
-
-Campo	Tipo	Descripción
-id_cliente	INT	Identificador del cliente
-nombre	VARCHAR(100)	Nombre del cliente
-ciudad	VARCHAR(50)	Ciudad
-fecha_registro	DATETIME	Fecha de registro
-Email	VARCHAR(100)	Correo electrónico
-Credito	DECIMAL(18,2)	Crédito asignado
-Estado	CHAR(1)	A = Activo / I = Inactivo
-
-La tabla utiliza IDENTITY para generar automáticamente el identificador y valores DEFAULT para algunos campos.
-
-También se utiliza una restricción CHECK para garantizar que el estado solamente pueda ser:
-
-A = Activo
-I = Inactivo
-
-Acceso a datos
-
-El proyecto implementa dos formas de acceso a SQL Server.
-
-1. SQL directo
-
-ClienteRepositorySql
-
-Utiliza consultas SQL parametrizadas mediante ADO.NET.
-
-Ejemplo conceptual:
-
-SELECT id_cliente, nombre, ciudad, email, credito, estado
-FROM Clientes
+### **SQL Directo (`ClienteRepositorySql`)**
+Utiliza consultas SQL fuertemente parametrizadas mediante ADO.NET para evitar inyecciones de código:
+```sql
+SELECT id_cliente, nombre, ciudad, email, credito, estado 
+FROM Clientes 
 WHERE id_cliente = @id_cliente
-2. Stored Procedures
+```
 
-ClienteRepositorySp
+### **Stored Procedures (`ClienteRepositorySp`)**
+Utiliza los siguientes procedimientos almacenados en la base de datos para delegar la ejecución al servidor:
+* `sp_RegistrarCliente`
+* `sp_ListarClientes`
+* `sp_ObtenerClientePorId`
+* `sp_ActualizarCliente`
+* `sp_EliminarCliente`
 
-Utiliza procedimientos almacenados para realizar las operaciones CRUD.
+---
 
-Entre ellos:
+## **Seguridad y buenas prácticas**
 
-sp_RegistrarCliente
-sp_ListarClientes
-sp_ObtenerClientePorId
-sp_ActualizarCliente
-sp_EliminarCliente
+* **Consultas parametrizadas:** Uso estricto de `SqlCommand` con parámetros para evitar vulnerabilidades.
+* **Separación de capas:** Desacoplamiento total entre el acceso a datos y la lógica de negocio.
+* **Integridad:** Uso de restricciones `CHECK` y `DEFAULT` directamente en SQL Server.
+* **Eficiencia:** Recuperación de IDs autogenerados mediante `SCOPE_IDENTITY()`.
 
-El proyecto permite cambiar entre ambas implementaciones mediante Dependency Injection.
+---
 
-Seguridad y buenas prácticas
+## **Funcionalidades (Interfaz de Consola)**
 
-Durante el desarrollo se aplicaron algunas prácticas importantes:
+Al iniciar la aplicación, el usuario interactúa con el siguiente menú dinámico:
 
-Consultas parametrizadas.
-Uso de SqlCommand.
-Separación entre acceso a datos y lógica de negocio.
-Uso de interfaces.
-Inyección de Dependencias.
-Validaciones antes de guardar información.
-Manejo de valores NULL.
-Uso de SCOPE_IDENTITY() para recuperar el ID generado.
-Restricciones en SQL Server para proteger la integridad de los datos.
-
-Funcionalidades
-
-Al ejecutar la aplicación se muestra el menú:
-
+```text
 --- GESTIÓN DE CLIENTES ---
 
 1. Listar clientes
@@ -215,166 +178,51 @@ Al ejecutar la aplicación se muestra el menú:
 4. Actualizar cliente
 5. Eliminar cliente
 6. Salir
-Registrar cliente
+```
 
-Permite ingresar:
+* **Registrar cliente:** Pide Nombre, Ciudad, Email, Crédito y Estado. El ID lo genera la base de datos.
+* **Buscar cliente:** Consulta la información detallada filtrando por su ID.
+* **Actualizar cliente:** Permite modificar campos específicos de un registro existente.
+* **Eliminar cliente:** Remueve al cliente de la base de datos mediante su ID.
+* **Listar clientes:** Muestra de forma ordenada todos los registros de la tabla.
 
-Nombre
-Ciudad
-Email
-Crédito
-Estado
+---
 
-El ID es generado automáticamente por SQL Server.
+## **Configuración de conexión**
 
-Buscar cliente
+La cadena de conexión se encuentra centralizada en **`Data/Conexion.cs`**:
 
-Permite consultar un cliente utilizando su ID.
+```csharp
+Server=INFORMATICA; Database=GestionClientes; Integrated Security=True; TrustServerCertificate=True;
+```
+> **Nota:** Recuerda adaptar este String a los parámetros de tu instancia local de SQL Server antes de ejecutar el proyecto.
 
-Actualizar cliente
+---
 
-Permite modificar los datos de un cliente existente.
+## **Cómo ejecutar el proyecto**
 
-Eliminar cliente
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com
+   ```
+2. **Crear la Base de Datos:** Crea una base de datos vacía llamada `GestionClientes` en tu servidor de SQL Server.
+3. **Ejecutar Scripts:** Ejecuta el script SQL adjunto en el proyecto para crear la tabla `Clientes` y los Stored Procedures necesarios.
+4. **Configurar Conexión:** Abre `Data/Conexion.cs` y actualiza la propiedad `Server` con el nombre de tu servidor local.
+5. **Compilar y Correr:** Abre la solución (`.slnx` o `.sln`) en **Visual Studio** y presiona `F5`.
 
-Permite eliminar un cliente mediante su ID.
+---
 
-Listar clientes
+## 📈 **Evolución de mi Ruta .NET**
 
-Obtiene todos los clientes registrados en la base de datos.
+* **Proyecto 01 — Gestión de Clientes (Consola):** C#, POO básica, Listas en memoria (`List<T>`), LINQ y validaciones básicas.
+* **Proyecto 02 — Gestión de Clientes + SQL (Este proyecto):** Arquitectura por capas, SQL Server, ADO.NET, Interfaces, Dependency Injection y Stored Procedures.
+* **Próximo proyecto — ASP.NET Core Web API:** El siguiente paso será transformar este backend en una API REST moderna utilizando HTTP Controllers, DTOs, y Entity Framework Core.
 
-Configuración de conexión
+---
 
-La conexión se encuentra centralizada en:
+## **Autor**
 
-Data/Conexion.cs
+**Jhon Ortiz** — *Ingeniero de Sistemas*
+* **GitHub:** [@jortiz2705](https://github.com)
 
-Ejemplo:
-
-Server=INFORMATICA;
-Database=GestionClientes;
-Integrated Security=True;
-TrustServerCertificate=True;
-
-La cadena de conexión debe adaptarse al entorno donde se ejecute el proyecto.
-
-Cómo ejecutar el proyecto
-1. Clonar el repositorio
-git clone https://github.com/jortiz2705/GestionClientesSQL.git
-2. Crear la base de datos
-
-Crear en SQL Server la base de datos:
-
-GestionClientes
-3. Crear la tabla y procedimientos
-
-Ejecutar el script SQL incluido en el proyecto.
-
-4. Configurar la conexión
-
-Revisar:
-
-Data/Conexion.cs
-
-y colocar el nombre de la instancia de SQL Server correspondiente.
-
-5. Ejecutar
-
-Abrir la solución en Visual Studio y ejecutar el proyecto.
-
-Conceptos aprendidos
-
-Este proyecto permitió practicar y consolidar:
-
-C#
-Programación Orientada a Objetos
-Clases y objetos
-Encapsulamiento
-Interfaces
-Inyección de Dependencias
-ServiceCollection
-ServiceProvider
-IServiceScope
-AddScoped
-Patrón Repository
-Capa de servicios
-ADO.NET
-SqlConnection
-SqlCommand
-SqlDataReader
-Parámetros SQL
-ExecuteReader
-ExecuteScalar
-ExecuteNonQuery
-SQL Server
-Stored Procedures
-CRUD
-Validaciones
-Manejo de excepciones
-
-Evolución del proyecto
-
-Este proyecto representa el segundo paso de mi aprendizaje práctico en .NET.
-
-Proyecto 01
-
-Gestión de Clientes — C#
-
-Conceptos principales:
-
-C#
-POO
-Clases
-Encapsulamiento
-List<T>
-LINQ
-Validaciones
-Proyecto 02
-
-Gestión de Clientes — C# + SQL Server
-
-Conceptos principales:
-
-C#
-SQL Server
-ADO.NET
-Repository
-Service
-Interfaces
-Dependency Injection
-Stored Procedures
-CRUD
-Próximo proyecto
-
-Proyecto 03 — ASP.NET Core Web API
-
-El siguiente paso será transformar los conocimientos adquiridos en una aplicación Web API utilizando:
-
-ASP.NET Core
-REST API
-HTTP
-Controllers
-DTOs
-Dependency Injection
-SQL Server
-
-Autor
-
-Jhon Ortiz
-
-Ingeniero de Sistemas
-
-En proceso de especialización práctica en:
-
-C#
-.NET
-ASP.NET Core
-SQL Server
-Desarrollo de APIs
-Inteligencia Artificial aplicada al desarrollo empresarial
-
-GitHub:
-
-jortiz2705
-Proyecto desarrollado como parte de mi aprendizaje práctico de C# y .NET, con énfasis en arquitectura, 
-acceso a datos y buenas prácticas de desarrollo.
+*En proceso de especialización práctica en C#, .NET, ASP.NET Core, SQL Server, Arquitectura de Software e IA aplicada al desarrollo empresarial.*
